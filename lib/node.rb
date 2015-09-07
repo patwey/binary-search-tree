@@ -1,12 +1,11 @@
 require 'null_node'
 
 class Node
-  attr_accessor :data, :left, :right, :parent
+  attr_accessor :data, :left, :right
 
   def initialize(data = nil)
     @data = data
     @left = nil
     @right = nil
-    @parent = nil
   end
 end

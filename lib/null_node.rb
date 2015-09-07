@@ -1,5 +1,5 @@
-require 'bst'
-require 'node'
+require_relative 'bst'
+require_relative 'node'
 
 class NullNode
   attr_accessor :data, :left, :right
