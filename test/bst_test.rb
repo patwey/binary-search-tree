@@ -14,6 +14,8 @@ class BstTest < Minitest::Test
         .insert('g')
 
     @array = []
+    @datafile = 'data.txt'
+    @sortedfile = 'sorted.txt'
   end
 
   def test_i_can_insert_a_new_value_into_the_tree
@@ -56,10 +58,9 @@ class BstTest < Minitest::Test
   end
 
   def test_i_can_sort_tree_into_an_array_of_values_in_ascending_order
-    @bst.insert('h')
     @array = @bst.sort(@bst.head, @array)
 
-    assert_equal ['a','b','c','d','e','f','g','h'], @array
+    assert_equal ['a','b','c','d','e','f','g'], @array
   end
 
   def test_i_can_delete_a_value_and_repair_the_tree
@@ -81,5 +82,23 @@ class BstTest < Minitest::Test
     height = @bst.max_height(@bst.head, @array)
 
     assert_equal 5, height
+  end
+
+  def test_i_can_import_data_from_a_file
+    @bst = Bst.new
+    @bst.import(@datafile)
+    assert_equal 'd', @bst.head.data
+    assert_equal 'b', @bst.head.left.data
+    assert_equal 'c', @bst.head.left.right.data
+    assert_equal 'g', @bst.head.right.right.data
+  end
+
+  def test_i_can_export_data_to_a_file
+    @bst.export_sorted(@sortedfile)
+    file = File.open('./test/fixtures/sorted.txt')
+    assert_equal 'a', file.readline.chomp
+    assert_equal 'b', file.readline.chomp
+    assert_equal 'c', file.readline.chomp
+    file.close
   end
 end

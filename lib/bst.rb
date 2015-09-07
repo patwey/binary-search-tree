@@ -13,40 +13,36 @@ class Bst
 
     if self.head.nil?
       self.head = node
-    else
+      return self
+    end
+
       current = self.head
 
       loop do
-        if current.left.nil? && current.right.nil?
-          if node.data < current.data
-            current.left = node
-            return self
-          else
-            current.right = node
-            return self
-          end
-        end
-
-        if node.data < current.data
+        if data < current.data
           if current.left.nil?
             current.left = node
             return self
           else
             current = current.left
-            next
           end
-        elsif node.data > current.data
+
+        else
           if current.right.nil?
             current.right = node
             return self
           else
             current = current.right
-            next
           end
         end
       end
-    end
     self
+  end
+
+  def import(filename)
+    file = File.open("./test/fixtures/#{filename}")
+    file.each_line { |data| insert(data.chomp) } if head.nil?
+    file.close
   end
 
   def include?(data)
@@ -183,5 +179,13 @@ class Bst
     end
 
     depths.max
+  end
+
+  def export_sorted(filename)
+    file = File.open("./test/fixtures/#{filename}", 'w')
+    sorted = []
+    sorted = sort(head, sorted)
+    sorted.each { |value| file.write(value + "\n") }
+    file.close
   end
 end
