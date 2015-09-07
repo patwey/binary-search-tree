@@ -20,11 +20,9 @@ class Bst
         if current.left.nil? && current.right.nil?
           if node.data < current.data
             current.left = node
-            node.parent = current
             return self
           else
             current.right = node
-            node.parent = current
             return self
           end
         end
@@ -32,7 +30,6 @@ class Bst
         if node.data < current.data
           if current.left.nil?
             current.left = node
-            node.parent = current
             return self
           else
             current = current.left
@@ -41,7 +38,6 @@ class Bst
         elsif node.data > current.data
           if current.right.nil?
             current.right = node
-            node.parent = current
             return self
           else
             current = current.right
@@ -111,41 +107,81 @@ class Bst
     end
   end
 
-  def left(node, sorted)
-    if node.left
-      left(node.left, sorted)
-    else
-      sorted << node.data
-      right(node, sorted)
+  def sort(node, sorted)
+    unless node.left.nil?
+      sort(node.left, sorted)
     end
-  end
-
-  def right(node, sorted)
+    sorted << node.data
     if node.right
-      if !sorted.include?(node.right.data)
-        left(node.right, sorted)
-      end
-    else
-      backtrack(node, sorted)
+      sort(node.right, sorted)
     end
-  end
-
-  def backtrack(node, sorted)
-    return if node.parent.nil?
-    node = node.parent
-    if sorted.include?(node.data)
-      backtrack(node, sorted)
-    else
-      sorted << node.data
-      right(node, sorted)
-    end
-  end
-
-  def sort
-    sorted = []
-    return sorted if self.head.nil?
-    left(self.head, sorted)
     sorted
   end
 
+  def delete!(data)
+    return unless self.include?(data)
+    current = self.head
+    sorted = []
+
+    if current.data == data
+      sorted = sort(current, sorted)
+      self.head = nil
+    end
+
+    unless current.right.data == data ||
+           current.left.data == data
+      if data < current.data
+        current = current.left
+      else
+        current = current.right
+      end
+    end
+
+    if data == current.right.data
+      sorted = sort(current.right, sorted)
+      current.right = nil
+    end
+
+    if data == current.left.data
+      sorted = sort(current.left, sorted)
+      current.right = nil
+    end
+
+    self.head.right
+    sorted.delete(data) # Array#delete
+    sorted
+    sorted.each do |data|
+      insert(data)
+    end
+
+  end
+
+  def leaves(node, leaves)
+    unless node.left.nil?
+      leaves(node.left, leaves)
+    end
+
+    if node.right
+      leaves(node.right, leaves)
+    end
+
+    if node.left.nil? && node.right.nil?
+      leaves << node.data
+    end
+    leaves
+  end
+
+  def max_height(node, depths)
+    unless node.left.nil?
+      max_height(node.left, depths)
+    end
+
+    depths << depth_of(node.data)
+
+    if node.right
+      max_height(node.right, depths)
+    end
+
+    depths.max
+  end
 end
