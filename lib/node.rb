@@ -1,5 +1,3 @@
-require 'null_node'
-
 class Node
   attr_accessor :data, :left, :right
 

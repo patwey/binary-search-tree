@@ -9,34 +9,43 @@ class Bst
   end
 
   def insert(data)
-    node = Node.new(data)
-
-    if self.head.nil?
-      self.head = node
-      return self
+    if head
+      set_node(head, data)
+    else
+      self.head = Node.new(data)
     end
-
-      current = self.head
-
-      loop do
-        if data < current.data
-          if current.left.nil?
-            current.left = node
-            return self
-          else
-            current = current.left
-          end
-
-        else
-          if current.right.nil?
-            current.right = node
-            return self
-          else
-            current = current.right
-          end
-        end
-      end
     self
+  end
+
+  def set_node(current, data)
+    loop do
+      if data < current.data
+        current = set_left(current, Node.new(data))
+      else
+        current = set_right(current, Node.new(data))
+      end
+      break if current == self
+    end
+  end
+
+  def set_left(current, node)
+    if current.left.nil?
+      current.left = node
+      return self
+    else
+      current = current.left
+    end
+    current
+  end
+
+  def set_right(current, node)
+    if current.right.nil?
+      current.right = node
+      return self
+    else
+      current = current.right
+    end
+    current
   end
 
   def import(filename)
@@ -47,17 +56,15 @@ class Bst
 
   def include?(data)
     return true if head.data == data
-    return true if head.left.data == data ||
-                   head.right.data == data
-    current = self.head
+    current = head
     loop do
       if data < current.data
         return false if current.left.nil?
         return true if current.left.data == data
         current = current.left
-      elsif data > current.data
+      else
         return false if current.right.nil?
-        return true if  current.right.data == data
+        return true if current.right.data == data
         current = current.right
       end
     end
@@ -67,7 +74,7 @@ class Bst
     return 1 if head.data == data
     return 2 if head.left.data == data ||
                 head.right.data == data
-    current = self.head
+    current = head
     depth = 2
     loop do
       if data < current.data
@@ -84,9 +91,8 @@ class Bst
   end
 
   def maximum
-    return if self.head.nil?
-
-    current = self.head
+    return if head.nil?
+    current = head
     loop do
       return current.data if current.right.nil?
       current = current.right
@@ -94,9 +100,8 @@ class Bst
   end
 
   def minimum
-    return if self.head.nil?
-
-    current = self.head
+    return if head.nil?
+    current = head
     loop do
       return current.data if current.left.nil?
       current = current.left
@@ -104,26 +109,37 @@ class Bst
   end
 
   def sort(node, sorted)
-    unless node.left.nil?
-      sort(node.left, sorted)
-    end
+    sort(node.left, sorted) unless node.left.nil?
     sorted << node.data
-    if node.right
-      sort(node.right, sorted)
-    end
+    sort(node.right, sorted) if node.right
     sorted
   end
 
   def delete!(data)
     return unless self.include?(data)
-    current = self.head
     sorted = []
-
-    if current.data == data
-      sorted = sort(current, sorted)
+    if head.data == data
+      sorted = sort(head, sorted)
       self.head = nil
     end
+    current = find(head, data)
+    clip_branch(sorted, current, data)
+    repair(sorted, data)
+  end
 
+  def clip_branch(sorted, current, data)
+    if data == current.right.data
+      sorted = sort(current.right, sorted)
+      current.right = nil
+    else
+      sorted = sort(current.left, sorted)
+      current.left = nil
+    end
+    sorted
+  end
+
+  def find(current, data)
+    return head if head.data == data
     unless current.right.data == data ||
            current.left.data == data
       if data < current.data
@@ -132,52 +148,26 @@ class Bst
         current = current.right
       end
     end
+    current
+  end
 
-    if data == current.right.data
-      sorted = sort(current.right, sorted)
-      current.right = nil
-    end
-
-    if data == current.left.data
-      sorted = sort(current.left, sorted)
-      current.right = nil
-    end
-
-    self.head.right
+  def repair(sorted, data)
     sorted.delete(data) # Array#delete
-    sorted
-    sorted.each do |data|
-      insert(data)
-    end
-
+    sorted.each { |value| insert(value) }
   end
 
   def leaves(node, leaves)
-    unless node.left.nil?
-      leaves(node.left, leaves)
-    end
-
-    if node.right
-      leaves(node.right, leaves)
-    end
-
-    if node.left.nil? && node.right.nil?
-      leaves << node.data
-    end
+    leaves(node.left, leaves) unless node.left.nil?
+    leaves(node.right, leaves) if node.right
+    leaves << node.data if node.left.nil? &&
+                           node.right.nil?
     leaves
   end
 
   def max_height(node, depths)
-    unless node.left.nil?
-      max_height(node.left, depths)
-    end
-
+    max_height(node.left, depths) unless node.left.nil?
     depths << depth_of(node.data)
-
-    if node.right
-      max_height(node.right, depths)
-    end
-
+    max_height(node.right, depths) if node.right
     depths.max
   end
 
